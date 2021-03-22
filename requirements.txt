@@ -3,4 +3,4 @@ websockets
 chardet
 vk
 urllib3
-threading
+
