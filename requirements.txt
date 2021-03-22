@@ -2,6 +2,5 @@ aiohttp
 websockets
 chardet
 vk
-socket
 urllib3
 threading
