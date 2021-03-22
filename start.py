@@ -9,8 +9,9 @@ from vk_api.utils import get_random_id
 import socket
 import urllib3
 import time
+import os
 
-token = vk_api.VkApi(token="7ed8798153e83789e2d63346caeb1685c827572b60bda079446d161d5b0812222b0abecdf2e69d7eea8ee")
+token = vk_api.VkApi(token=str(os.environ.get('BOT_TOKEN')))
 long = VkLongPoll(token)
 vk = token.get_api()
 
