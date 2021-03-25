@@ -220,9 +220,11 @@ def main():
 
                                 if получаем_сколько_бонусов_юзера(event.user_id) is None:
                                     db.update_time_bonus(event.user_id, время_на_которое_обновится_бонус)
+                                    db.update_bonus(event.user_id, 0)
+                                    db.update_balance(event.user_id, размер_бонуса)
 
                                     vk.messages.send(peer_id=event.peer_id,
-                                                     message=f"{last_name}, первый бонус: {бонус_по_мск(event.user_id)}",
+                                                     message=f"{last_name}, первый бонус: 1000",
                                                      random_id=get_random_id())
 
                                 elif получаем_сколько_бонусов_юзера(event.user_id) == 0:
