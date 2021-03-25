@@ -133,7 +133,7 @@ def main():
                                 elif int(ставочные_деньги) < int(получаем_баланс(event.user_id)) or int(
                                         ставочные_деньги) == int(получаем_баланс(event.user_id)):
 
-                                    if random > 30:
+                                    if random > 20:
 
                                         db.update_balance(event.user_id,
                                                           int(получаем_баланс(event.user_id)) + (int(
