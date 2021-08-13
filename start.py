@@ -1,6 +1,6 @@
+
 from datetime import datetime, timedelta
 from random import randint
-from threading import Thread
 import requests
 import vk_api
 from sqlighter import SQLighter
@@ -9,10 +9,10 @@ from vk_api.utils import get_random_id
 import socket
 import urllib3
 import time
-import os
+import re
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
-token = vk_api.VkApi(token=str(os.environ.get('BOT_TOKEN')))
-
+token = vk_api.VkApi(token="9054c46ab1a41e7c186228248b386f18edeca458e3992126d34270b262f710be1b180fa2f176dbb51212d")
 long = VkLongPoll(token)
 vk = token.get_api()
 
@@ -23,6 +23,32 @@ db = SQLighter('user.db')
 мин_ставка_от_определённого_баланса = 1000
 time_format = "%Y-%m-%d %H:%M"
 admin_id = 243793518
+
+
+
+
+
+menu = VkKeyboard(one_time=False, inline=True)
+menu.add_button("Бонус", color="positive")
+menu.add_line()
+menu.add_button("Баланс", color="positive")
+menu.add_line()
+menu.add_button("Мой номер", color="positive")
+menu.add_line()
+menu.add_button("Казино", color=VkKeyboardColor.NEGATIVE)
+
+menu_kazino = VkKeyboard(one_time=False, inline=True)
+menu_kazino.add_button("Основное Меню", color=VkKeyboardColor.NEGATIVE)
+menu_kazino.add_line()
+menu_kazino.add_button("Казино процент 20", color="positive")
+menu_kazino.add_line()
+menu_kazino.add_button("Казино процент 40", color=VkKeyboardColor.POSITIVE)
+menu_kazino.add_line()
+menu_kazino.add_button("Казино процент 60", color=VkKeyboardColor.POSITIVE)
+menu_kazino.add_line()
+menu_kazino.add_button("Казино процент 80", color=VkKeyboardColor.POSITIVE)
+menu_kazino.add_line()
+menu_kazino.add_button("Казино процент 100", color=VkKeyboardColor.POSITIVE)
 
 
 def isint(s):
@@ -40,7 +66,7 @@ def получаем_баланс(user_id):
 
 def бонус_по_мск(user_id):
     for время_бонус in db.get_time_bonus(user_id):
-        бонус_время = datetime.strptime(время_бонус[0], time_format) + timedelta(hours=5, minutes=1)
+        бонус_время = datetime.strptime(время_бонус[0], time_format) + timedelta(hours=1, minutes=1)
         return бонус_время
 
 
@@ -65,27 +91,33 @@ def получаем_сколько_бонусов_юзера(user_id):
         return бонус[0]
 
 
+
 def main():
     while True:
         try:
             for event in long.listen():
 
-                время_на_которое_обновится_бонус = (datetime.now() + timedelta(minutes=время_для_бонуса)).strftime(
-                    time_format)
-
                 if event.type == VkEventType.MESSAGE_NEW:
+
+                    время_на_которое_обновится_бонус = (datetime.now() + timedelta(minutes=время_для_бонуса)).strftime(
+                        time_format)
+
                     random = randint(0, 100)
                     if event.to_me:
 
                         last_name = str(
                             vk.users.get(user_ids=(str(event.user_id)))[0]['last_name'])  # получение фамилии
-                        msg = event.text.lower()
+                        msg = str(event.text.lower()).replace("[club201483157|@d1slor] ","")
 
                         if db.subscriber_exists(event.user_id):
                             db.update_firstname(event.user_id, last_name)
                         else:
                             db.add_subscriber(event.user_id)
                             db.update_firstname(event.user_id, last_name)
+                        if 'основное меню' == msg:
+                            vk.messages.send(peer_id=event.peer_id, message=f"{last_name}, держи основное меню", keyboard=menu.get_keyboard(),
+                                             random_id=get_random_id())
+
 
                         if 'баланс' == msg:
 
@@ -101,30 +133,29 @@ def main():
                                                      получаем_баланс(event.user_id)) + "₽",
                                                  random_id=get_random_id())
                         if 'казино' in msg:
+                            if 'казино' == msg:
+                                vk.messages.send(peer_id=event.peer_id, message=f"{last_name}, держи меню казино",
+                                                 keyboard=menu_kazino.get_keyboard(),
+                                                 random_id=get_random_id())
+
+                            if получаем_баланс(event.user_id) is None:
+                                db.update_balance(event.user_id, размер_бонуса)
+
+
+
                             msg = str(msg).replace('казино', '').replace(' ', '')
-                            if "все" == str(msg) or "всё" == str(msg):
-                                if получаем_баланс(event.user_id) is None:
-                                    db.update_balance(event.user_id, размер_бонуса)
-                                    ставочные_деньги = размер_бонуса
-                                else:
-                                    ставочные_деньги = получаем_баланс(event.user_id)
 
-                            else:
-                                ставочные_деньги = msg
+                            ставочные_деньги = msg
 
-                            if isint(ставочные_деньги):
-
-                                if получаем_баланс(event.user_id) is None:
-                                    db.update_balance(event.user_id, размер_бонуса)
-
+                            def stavka( ставочные_деньги):
                                 if int(получаем_баланс(event.user_id)) == 0 or ставочные_деньги == 0:
                                     vk.messages.send(peer_id=event.peer_id,
                                                      message=f"{last_name}, нет денег или ставка равна 0",
                                                      random_id=get_random_id())
 
-                                elif int(ставочные_деньги) < 50:
+                                if int(ставочные_деньги) < 25:
                                     vk.messages.send(peer_id=event.peer_id,
-                                                     message=f"{last_name}, ставка меньше 50₽",
+                                                     message=f"{last_name}, мин ставка 25₽",
                                                      random_id=get_random_id())
 
 
@@ -145,7 +176,7 @@ def main():
                                                           int(получаем_баланс(event.user_id)) + (int(
                                                               ставочные_деньги) + (int(ставочные_деньги) / 100) * 25))
                                         vk.messages.send(peer_id=event.peer_id,
-                                                         message=f"{last_name} выиграл: {str(получаем_баланс(event.user_id))} ₽",
+                                                         message=f"{last_name} выиграл:\n {str(получаем_баланс(event.user_id))} ₽",
                                                          random_id=get_random_id())
 
 
@@ -164,6 +195,15 @@ def main():
                                     vk.messages.send(peer_id=event.peer_id,
                                                      message=last_name + ", у вас нет столько :) ",
                                                      random_id=get_random_id())
+                            if isint(ставочные_деньги):
+                                stavka(ставочные_деньги)
+                            elif "процент" in msg:
+                                msg = msg.replace("процент","").replace(" ","")
+                                if isint(msg):
+                                    процент_от_ставки = (float(получаем_баланс(event.user_id))/100)*float(msg)
+                                    stavka(процент_от_ставки)
+
+
 
                         if 'мой номер' == msg:
                             vk.messages.send(peer_id=event.peer_id,
@@ -173,10 +213,12 @@ def main():
                             if event.user_id == admin_id:
                                 команда_выдать = str(msg).replace('выдать', '').split()
                                 деньги_отправляемые, номер_счёта_получателя = команда_выдать[1], команда_выдать[0]
+
                                 if isint(номер_счёта_получателя) and isint(деньги_отправляемые):
                                     if db.subscriber_exists(номер_счёта_получателя):
                                         баланс_получателя = получаем_баланс(номер_счёта_получателя)
-
+                                        if баланс_получателя is None:
+                                            db.update_balance(event.user_id, размер_бонуса)
                                         db.update_balance(номер_счёта_получателя,
                                                           int(баланс_получателя) + int(деньги_отправляемые))
                                         vk.messages.send(peer_id=event.peer_id,
@@ -223,11 +265,14 @@ def main():
 
                                 if isint(номер_счёта_получателя) and isint(деньги_отправляемые):
                                     if db.subscriber_exists(номер_счёта_получателя):
-                                        if деньги_отправляемые is None:
-                                            db.update_balance(event.user_id, размер_бонуса)
+
                                         if int(номер_счёта_получателя) != int(event.user_id):
                                             баланс_отправителя, баланс_получателя = получаем_баланс(
                                                 event.user_id), получаем_баланс(номер_счёта_получателя)
+                                            if баланс_отправителя is None:
+                                                db.update_balance(event.user_id, размер_бонуса)
+                                            if баланс_получателя is None:
+                                                db.update_balance(event.user_id, размер_бонуса)
                                             if баланс_отправителя <= деньги_отправляемые:
                                                 vk.messages.send(peer_id=event.peer_id,
                                                                  message=f"{last_name}, у вас столько денег нет",
