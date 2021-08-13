@@ -66,7 +66,7 @@ def получаем_баланс(user_id):
 
 def бонус_по_мск(user_id):
     for время_бонус in db.get_time_bonus(user_id):
-        бонус_время = datetime.strptime(время_бонус[0], time_format) + timedelta(hours=1, minutes=1)
+        бонус_время = datetime.strptime(время_бонус[0], time_format) + timedelta(hours=3, minutes=1)
         return бонус_время
 
 
@@ -212,7 +212,18 @@ def main():
                         if 'выдать' in msg:
                             if event.user_id == admin_id:
                                 команда_выдать = str(msg).replace('выдать', '').split()
-                                деньги_отправляемые, номер_счёта_получателя = команда_выдать[1], команда_выдать[0]
+                                try:
+                                    деньги_отправляемые = команда_выдать[1]
+                                except:
+                                    vk.messages.send(peer_id=event.peer_id,message=f"{last_name} сумма указана не верно",random_id=get_random_id())
+                                    
+                                try:
+                                     номер_счёта_получателя = команда_выдать[0]
+                                except:
+                                    vk.messages.send(peer_id=event.peer_id,
+                                                         message=f"{last_name} счёт получателя был указан неверно",
+                                                         random_id=get_random_id())
+                                     
 
                                 if isint(номер_счёта_получателя) and isint(деньги_отправляемые):
                                     if db.subscriber_exists(номер_счёта_получателя):
@@ -261,7 +272,18 @@ def main():
                                                          random_id=get_random_id())
                             else:
                                 команда_перевода = str(msg).replace('перевести', '').split()
-                                деньги_отправляемые, номер_счёта_получателя = команда_перевода[1], команда_перевода[0]
+                                try:
+                                    деньги_отправляемые = команда_перевода[1]
+                                except:
+                                    vk.messages.send(peer_id=event.peer_id,message=f"{last_name} сумма указана не верно",random_id=get_random_id())
+                                    
+                                try:
+                                     номер_счёта_получателя = команда_перевода[0]
+                                except:
+                                     vk.messages.send(peer_id=event.peer_id,
+                                                         message=f"{last_name} счёт получателя был указан неверно",
+                                                         random_id=get_random_id())
+
 
                                 if isint(номер_счёта_получателя) and isint(деньги_отправляемые):
                                     if db.subscriber_exists(номер_счёта_получателя):
