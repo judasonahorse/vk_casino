@@ -278,9 +278,9 @@ def main():
                                     vk.messages.send(peer_id=event.peer_id,message=f"{last_name} сумма указана не верно",random_id=get_random_id())
                                     
                                 try:
-                                     номер_счёта_получателя = команда_перевода[0]
+                                    номер_счёта_получателя = команда_перевода[0]
                                 except:
-                                     vk.messages.send(peer_id=event.peer_id,
+                                    vk.messages.send(peer_id=event.peer_id,
                                                          message=f"{last_name} счёт получателя был указан неверно",
                                                          random_id=get_random_id())
 
