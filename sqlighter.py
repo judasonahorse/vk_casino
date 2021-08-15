@@ -8,107 +8,69 @@ class SQLighter:
         self.connection = sqlite3.connect(database, check_same_thread=False)
         self.cursor = self.connection.cursor()
 
-    def update_firstname(self, user_id, status):
+    def update_firstname(self, user_id, status,chat_id):
         """фамилия"""
         with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `first_name` = ? WHERE `user_id` = ?", (status, user_id))
+            return self.cursor.execute(f"UPDATE `{chat_id}` SET `first_name` = ? WHERE `user_id` = ?", (status, user_id))
 
 
-
-    def get_balance(self, user_id):
+    def get_balance(self, user_id,chat_id):
         """Получаем сколько раз писал мат"""
         with self.connection:
-            return self.cursor.execute('SELECT balance FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
+            return self.cursor.execute(f'SELECT balance FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
 
-    def get_bonus(self, user_id):
+    def get_bonus(self, user_id,chat_id):
         """Получаем сколько раз писал мат"""
         with self.connection:
-            return self.cursor.execute('SELECT bonus FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
+            return self.cursor.execute(f'SELECT bonus FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
 
-    def get_time_bonus(self, user_id):
+    def get_time_bonus(self, user_id,chat_id):
         """Получаем сколько раз писал мат"""
         with self.connection:
-            return self.cursor.execute('SELECT time_bonus FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
+            return self.cursor.execute(f'SELECT time_bonus FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
 
-    def get_years_bonus(self, user_id):
+
+    def get_medal(self, user_id,chat_id):
         """Получаем сколько раз писал мат"""
         with self.connection:
-            return self.cursor.execute('SELECT years FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
-
-    def get_month_bonus(self, user_id):
-        """Получаем сколько раз писал мат"""
+            return self.cursor.execute(f'SELECT medal FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
+    def get_top(self,chat_id):
         with self.connection:
-            return self.cursor.execute('SELECT month FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
+            return self.cursor.execute(f'SELECT * FROM `{chat_id}` ORDER BY `medal` DESC , `balance` DESC' , ()).fetchall()
 
-    def get_day_bonus(self, user_id):
-        """Получаем сколько раз писал мат"""
-        with self.connection:
-            return self.cursor.execute('SELECT day FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
-
-    def get_hours_bonus(self, user_id):
-        """Получаем сколько раз писал мат"""
-        with self.connection:
-            return self.cursor.execute('SELECT hours FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
-
-    def get_minutes_bonus(self, user_id):
-        """Получаем сколько раз писал мат"""
-        with self.connection:
-            return self.cursor.execute('SELECT minutes FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
-
-
-
-    def subscriber_exists(self, user_id):
+    def subscriber_exists(self, user_id,chat_id):
         """Проверяем, есть ли уже юзер в базе"""
         with self.connection:
-            result = self.cursor.execute('SELECT * FROM `userdata` WHERE `user_id` = ?', (user_id,)).fetchall()
+            result = self.cursor.execute(f'SELECT * FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
             return bool(len(result))
 
-    def add_subscriber(self, user_id, status=True):
+    def add_subscriber(self, user_id, chat_id,status=True):
         """Добавляем нового подписчика"""
         with self.connection:
-            return self.cursor.execute("INSERT INTO `userdata` (`user_id`, `status`) VALUES(?,?)", (user_id, status))
+            return self.cursor.execute(f"INSERT INTO `{chat_id}` (`user_id`, `status`) VALUES(?,?)", (user_id, status))
 
-    def update_mat(self, user_id, status):
+
+    def update_balance(self, user_id,status,chat_id):
         """Обновляем количество мата пользователя"""
         with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `mat` = ? WHERE `user_id` = ?", (status, user_id))
-
-    def update_balance(self, user_id, status):
+            return self.cursor.execute(f"UPDATE `{chat_id}` SET `balance` = ? WHERE `user_id` = ?", (status, user_id))
+    def update_medal(self, user_id,status,chat_id ):
         """Обновляем количество мата пользователя"""
         with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `balance` = ? WHERE `user_id` = ?", (status, user_id))
+            return self.cursor.execute(f"UPDATE `{chat_id}` SET `medal` = ? WHERE `user_id` = ?", (status, user_id))
 
-    def update_bonus(self, user_id, status):
+    def update_bonus(self, user_id, status,chat_id):
         with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `bonus` = ? WHERE `user_id` = ?", (status, user_id))
+            return self.cursor.execute(f"UPDATE `{chat_id}` SET `bonus` = ? WHERE `user_id` = ?", (status, user_id))
 
-    def update_time_bonus(self, user_id, status):
+    def update_time_bonus(self, user_id,status, chat_id):
         """Обновляем количество мата пользователя"""
         with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `time_bonus` = ? WHERE `user_id` = ?", (status, user_id))
+            return self.cursor.execute(f"UPDATE `{chat_id}` SET `time_bonus` = ? WHERE `user_id` = ?", (status, user_id))
 
-    def update_years_bonus(self, user_id, status):
-        """Обновляем количество мата пользователя"""
+    def create_table_for_char(self,chat_id):
         with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `years` = ? WHERE `user_id` = ?", (status, user_id))
-    def update_month_bonus(self, user_id, status):
-        with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `years` = ? WHERE `user_id` = ?", (status, user_id))
-
-    def update_day_bonus(self, user_id, status):
-        """Обновляем количество мата пользователя"""
-        with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `day` = ? WHERE `user_id` = ?", (status, user_id))
-
-    def update_hours_bonus(self, user_id, status):
-        """Обновляем количество мата пользователя"""
-        with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `hours` = ? WHERE `user_id` = ?", (status, user_id))
-
-    def update_minutes_bonus(self, user_id, status):
-        """Обновляем количество мата пользователя"""
-        with self.connection:
-            return self.cursor.execute("UPDATE `userdata` SET `minutes` = ? WHERE `user_id` = ?", (status, user_id))
+            return self.cursor.execute(f"CREATE TABLE IF NOT EXISTS {chat_id}(user_id CHAR, status BOOLEAN, first_name CHAR,balance INT,bonus BOOLEAN,time_bonus DATE, medal INT DEFAULT 0 )")
 
     def close(self):
         """Закрываем соединение с БД"""
