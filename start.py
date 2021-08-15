@@ -23,7 +23,7 @@ time_format = "%Y-%m-%d %H:%M"
 основное_меню_текст = "🏠основное меню🏠"
 бонус_текст = "🎁бонус🎁"
 баланс_текст = "💰баланс💰"
-мой_номер_текст = "📱мой номер📱"
+
 топ_текст = "👑топ👑"
 казино_текст = "🎰казино🎰"
 игры_текст = "🎉игры🎉"
@@ -35,9 +35,7 @@ menu = VkKeyboard(one_time=False, inline=True)
 menu.add_button(бонус_текст, color=VkKeyboardColor.POSITIVE)
 menu.add_button(баланс_текст, color=VkKeyboardColor.POSITIVE)
 menu.add_line()
-menu.add_button(мой_номер_текст, color=VkKeyboardColor.POSITIVE)
 menu.add_button(топ_текст, color=VkKeyboardColor.POSITIVE)
-menu.add_line()
 menu.add_button(игры_текст, color=VkKeyboardColor.NEGATIVE)
 
 menu_games = VkKeyboard(one_time=False, inline=True)
@@ -154,6 +152,7 @@ def main():
 
                     msg = str(event.object['text'].lower()).replace("[club201483157|@d1slor] ", "")
 
+
                     if db.subscriber_exists(event.object.from_id):
                         db.update_firstname(event.object.from_id, last_name)
                     else:
@@ -204,24 +203,31 @@ def main():
 
                     if русская_рулетка_текст == msg or "русская рулетка" == msg:
                         vk.messages.send(peer_id=event.object['peer_id'],
-                                         message="Для того, чтобы играть, напишите: Вызвать на Дуэль номер_апонента сумма",
+                                         message="Для того, чтобы играть, напишите: Вызвать на Дуэль сумма",
                                          keyboard=menu_games.get_keyboard(),
                                          random_id=get_random_id())
                     if "вызвать на дуэль" in msg:
-                        команда_перевода = msg.replace("вызвать на дуэль ", "").split()
+                        try:
+                            сумма_ставки = msg.replace("вызвать на дуэль", "").split()
+                            деньги_отправляемые, номер_счёта_получателя = сумма_ставки[0], int(
+                                event.object.fwd_messages[0]['from_id'])
 
-                        деньги_отправляемые, номер_счёта_получателя = команда_перевода[1], команда_перевода[0]
+                            def действие():
+                                список_дуэль[int(номер_счёта_получателя)] = int(деньги_отправляемые), int(
+                                    event.object.from_id)
 
-                        def действие():
-                            список_дуэль[int(номер_счёта_получателя)] = int(деньги_отправляемые), int(
-                                event.object.from_id)
+                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                 message=f"[id{номер_счёта_получателя}|{get_last_name(номер_счёта_получателя)} вас вызывает {last_name}] на дуэль \n Сумма:{деньги_отправляемые}",
+                                                 keyboard=menu_ruletka.get_keyboard(),
+                                                 random_id=get_random_id())
 
+                            проверка_ставки(номер_счёта_получателя, сумма_ставки[0], действие)
+                        except:
                             vk.messages.send(peer_id=event.object['peer_id'],
-                                             message=f"[id{номер_счёта_получателя}|{get_last_name(номер_счёта_получателя)} вас вызывает {last_name}] на дуэль \n Сумма:{деньги_отправляемые}",
+                                             message=f"{last_name} ставка введена неверно",
                                              keyboard=menu_ruletka.get_keyboard(),
                                              random_id=get_random_id())
 
-                        проверка_ставки(номер_счёта_получателя, деньги_отправляемые, действие)
 
                     if "принять дуэль" == msg:
                         try:
@@ -360,13 +366,28 @@ def main():
                                                      message=f"{last_name} выпал x1.5:\n {str(получаем_баланс(event.object.from_id))} ₽",
                                                      keyboard=menu_kazino.get_keyboard(),
                                                      random_id=get_random_id())
-
-                                elif random < 100:
+                                elif random < 92:
                                     db.update_balance(event.object.from_id,
                                                       int(получаем_баланс(event.object.from_id)) + (
                                                               int(ставочные_деньги) * 2))
                                     vk.messages.send(peer_id=event.object['peer_id'],
                                                      message=f"{last_name} выпал x2:\n {str(получаем_баланс(event.object.from_id))} ₽",
+                                                     keyboard=menu_kazino.get_keyboard(),
+                                                     random_id=get_random_id())
+                                elif random < 97:
+                                    db.update_balance(event.object.from_id,
+                                                      int(получаем_баланс(event.object.from_id)) + (
+                                                              int(ставочные_деньги) * 5))
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name} выпал x5:\n {str(получаем_баланс(event.object.from_id))} ₽",
+                                                     keyboard=menu_kazino.get_keyboard(),
+                                                     random_id=get_random_id())
+                                elif random < 100:
+                                    db.update_balance(event.object.from_id,
+                                                      int(получаем_баланс(event.object.from_id)) + (
+                                                              int(ставочные_деньги) * 10))
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name} выпал куш x10:\n {str(получаем_баланс(event.object.from_id))} ₽",
                                                      keyboard=menu_kazino.get_keyboard(),
                                                      random_id=get_random_id())
 
@@ -399,16 +420,14 @@ def main():
                             if isint(msg):
                                 процент_от_ставки = (float(получаем_баланс(event.object.from_id)) / 100) * float(msg)
                                 play(процент_от_ставки)
-                    if мой_номер_текст == msg or "мой номер" == msg:
-                        vk.messages.send(peer_id=event.object['peer_id'],
-                                         message=last_name + ", ваш номер: " + str(event.object.from_id),
-                                         keyboard=menu.get_keyboard(),
-                                         random_id=get_random_id())
+
                     if 'перевести' in msg:
 
-                        if 'перевести все' in msg:
-                            номер_счёта_получателя = str(msg).replace('перевести все', '').replace(" ", "")
+                        if 'перевести все' in msg or 'перевести всё' in msg:
+
                             try:
+                                номер_счёта_получателя = int(
+                                    event.object.fwd_messages[0]['from_id'])
                                 деньги_отправляемые = получаем_баланс(event.object.from_id)
 
                                 def действие():
@@ -431,9 +450,10 @@ def main():
                                                  random_id=get_random_id())
 
                         else:
-                            команда_перевода = str(msg).replace('перевести', '').split()
+                            сумма_перевода = str(msg).replace('перевести', '').split()
                             try:
-                                деньги_отправляемые, номер_счёта_получателя = команда_перевода[1], команда_перевода[0]
+                                деньги_отправляемые, номер_счёта_получателя = сумма_перевода[0], int(
+                                event.object.fwd_messages[0]['from_id'])
 
                                 def действие():
                                     баланс_отправителя, баланс_получателя = получаем_баланс(
@@ -444,7 +464,7 @@ def main():
                                     db.update_balance(номер_счёта_получателя,
                                                       int(баланс_получателя) + int(деньги_отправляемые))
                                     vk.messages.send(peer_id=event.object['peer_id'],
-                                                     message=f"{last_name}, перевёл на " + номер_счёта_получателя + " " + деньги_отправляемые + "₽",
+                                                     message=f"{last_name}, перевёл на {номер_счёта_получателя} {деньги_отправляемые}₽",
                                                      keyboard=menu.get_keyboard(),
                                                      random_id=get_random_id())
 
