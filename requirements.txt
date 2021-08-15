@@ -1,6 +1,0 @@
-aiohttp
-websockets
-chardet
-vk
-urllib3
-vk_api
