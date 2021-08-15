@@ -330,14 +330,14 @@ def main():
                                     if random < шанс:
                                         def message():
                                             vk.messages.send(peer_id=event.object['peer_id'],
-                                                             message=f"{last_name} выпал x{коэф}:\n {str(получаем_баланс(event.object.from_id,chat_id_name))} ₽\n {рейтинг()}",
+                                                             message=f"{last_name} выпал {коэф}%:\n {str(получаем_баланс(event.object.from_id,chat_id_name))} ₽\n {рейтинг()}",
                                                              keyboard=menu_kazino.get_keyboard(),
                                                              random_id=get_random_id())
 
-                                        if шанс < шанс_проигрышный:
+                                        if шанс > шанс_проигрышный:
                                             db.update_balance(event.object.from_id,
-                                                              int(получаем_баланс(event.object.from_id,chat_id_name)) - (
-                                                                      int(ставочные_деньги) * коэф),chat_id_name)
+                                                              int(получаем_баланс(event.object.from_id,chat_id_name)) +   ((int(ставочные_деньги)/100)* коэф),chat_id_name)
+
                                             message()
                                             return True
 
@@ -350,24 +350,24 @@ def main():
                                         else:
                                             db.update_balance(event.object.from_id,
                                                               int(получаем_баланс(event.object.from_id,chat_id_name)) + (
-                                                                      int(ставочные_деньги) * коэф),chat_id_name)
+                                                                      (int(ставочные_деньги)/100)* коэф),chat_id_name)
                                             message()
                                             return True
                                     return False
 
                                 if шанс_и_значения(10, 0, 65):
                                     print("")
-                                elif шанс_и_значения(30, 0.5, 65):
+                                elif шанс_и_значения(30, 5, 65):
                                     print("")
-                                elif шанс_и_значения(65, 1.2, 65):
+                                elif шанс_и_значения(70, 11, 65):
                                     print("")
-                                elif шанс_и_значения(80, 1.5, 65):
+                                elif шанс_и_значения(80, 15, 65):
                                     print("")
-                                elif шанс_и_значения(92, 2, 65):
+                                elif шанс_и_значения(92, 20, 65):
                                     print("")
-                                elif шанс_и_значения(97, 5, 65):
+                                elif шанс_и_значения(97, 50, 65):
                                     print("")
-                                elif шанс_и_значения(100, 10, 65):
+                                elif шанс_и_значения(100, 100, 65):
                                     print("")
 
 
@@ -445,7 +445,7 @@ def main():
                                                  random_id=get_random_id())
                     if бонус_текст == msg or "бонус" == msg:
                         if получаем_баланс(event.object.from_id,chat_id_name) is None or int(
-                                получаем_баланс(event.object.from_id),chat_id_name) < 25:
+                                получаем_баланс(event.object.from_id,chat_id_name)) < 25:
                             время_на_которое_обновится_бонус = (
                                     datetime.now() + timedelta(minutes=config.время_для_бонуса)).strftime(
                                 time_format)
