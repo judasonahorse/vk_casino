@@ -20,7 +20,10 @@ vk = vk_session.get_api()  # Работа с VK API
 db = SQLighter('user.db')
 
 time_format = "%Y-%m-%d %H:%M"
+
 список_дуэль = {'id': 'value'}
+
+
 банк_снять_текст = "банк снять"
 банк_пополнить_текст = "банк пополнить"
 основное_меню_текст = "основное меню"
@@ -33,6 +36,8 @@ time_format = "%Y-%m-%d %H:%M"
 игры_текст = "игры"
 русская_рулетка_текст = "русская рулетка"
 перевести_текст = "перевести"
+
+
 menu_top = VkKeyboard(one_time=False, inline=True)
 menu_top.add_button(основное_меню_текст, color=VkKeyboardColor.NEGATIVE)
 
@@ -73,10 +78,7 @@ def isint(s):
         return True
     except ValueError:
         return False
-def сложение(a,b):
-    return a+b
-def вычитание(a,b):
-    return (a,b)
+
 
 def получаем_топ_общий(chat_id_name):
     top_list = ""
