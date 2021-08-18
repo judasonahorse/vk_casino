@@ -9,34 +9,32 @@ class SQLighter:
         self.cursor = self.connection.cursor()
 
     def update_firstname(self, user_id, status,chat_id):
-        """фамилия"""
         with self.connection:
             return self.cursor.execute(f"UPDATE `{chat_id}` SET `first_name` = ? WHERE `user_id` = ?", (status, user_id))
 
 
     def get_balance(self, user_id,chat_id):
-        """Получаем сколько раз писал мат"""
         with self.connection:
             return self.cursor.execute(f'SELECT balance FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
+    def get_bank(self, user_id,chat_id):
+        with self.connection:
+            return self.cursor.execute(f'SELECT bank FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
 
     def get_bonus(self, user_id,chat_id):
-        """Получаем сколько раз писал мат"""
         with self.connection:
             return self.cursor.execute(f'SELECT bonus FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
 
     def get_time_bonus(self, user_id,chat_id):
-        """Получаем сколько раз писал мат"""
         with self.connection:
             return self.cursor.execute(f'SELECT time_bonus FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
 
 
     def get_medal(self, user_id,chat_id):
-        """Получаем сколько раз писал мат"""
         with self.connection:
             return self.cursor.execute(f'SELECT medal FROM `{chat_id}` WHERE `user_id` = ?', (user_id,)).fetchall()
     def get_top(self,chat_id):
         with self.connection:
-            return self.cursor.execute(f'SELECT * FROM `{chat_id}` ORDER BY `medal` DESC , `balance` DESC' , ()).fetchall()
+            return self.cursor.execute(f'SELECT * FROM `{chat_id}` ORDER BY `medal` DESC , `balance` +`bank` DESC' , ()).fetchall()
 
     def subscriber_exists(self, user_id,chat_id):
         """Проверяем, есть ли уже юзер в базе"""
@@ -51,11 +49,12 @@ class SQLighter:
 
 
     def update_balance(self, user_id,status,chat_id):
-        """Обновляем количество мата пользователя"""
         with self.connection:
             return self.cursor.execute(f"UPDATE `{chat_id}` SET `balance` = ? WHERE `user_id` = ?", (status, user_id))
+    def update_bank(self, user_id,status,chat_id):
+        with self.connection:
+            return self.cursor.execute(f"UPDATE `{chat_id}` SET `bank` = ? WHERE `user_id` = ?", (status, user_id))
     def update_medal(self, user_id,status,chat_id ):
-        """Обновляем количество мата пользователя"""
         with self.connection:
             return self.cursor.execute(f"UPDATE `{chat_id}` SET `medal` = ? WHERE `user_id` = ?", (status, user_id))
 
@@ -64,7 +63,7 @@ class SQLighter:
             return self.cursor.execute(f"UPDATE `{chat_id}` SET `bonus` = ? WHERE `user_id` = ?", (status, user_id))
 
     def update_time_bonus(self, user_id,status, chat_id):
-        """Обновляем количество мата пользователя"""
+
         with self.connection:
             return self.cursor.execute(f"UPDATE `{chat_id}` SET `time_bonus` = ? WHERE `user_id` = ?", (status, user_id))
 
