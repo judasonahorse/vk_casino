@@ -20,10 +20,7 @@ vk = vk_session.get_api()  # Работа с VK API
 db = SQLighter('user.db')
 
 time_format = "%Y-%m-%d %H:%M"
-
 список_дуэль = {'id': 'value'}
-
-
 банк_снять_текст = "банк снять"
 банк_пополнить_текст = "банк пополнить"
 основное_меню_текст = "основное меню"
@@ -36,8 +33,6 @@ time_format = "%Y-%m-%d %H:%M"
 игры_текст = "игры"
 русская_рулетка_текст = "русская рулетка"
 перевести_текст = "перевести"
-
-
 menu_top = VkKeyboard(one_time=False, inline=True)
 menu_top.add_button(основное_меню_текст, color=VkKeyboardColor.NEGATIVE)
 
@@ -78,7 +73,10 @@ def isint(s):
         return True
     except ValueError:
         return False
-
+def сложение(a,b):
+    return a+b
+def вычитание(a,b):
+    return (a,b)
 
 def получаем_топ_общий(chat_id_name):
     top_list = ""
@@ -292,7 +290,7 @@ def main():
                     elif дуэль_текст in msg:
                         try:
                             cумма_ставки = msg.replace(дуэль_текст, "").split()
-                            деньги_отправляемые, номер_счёта_получателя = сумма_ставки[0], int(
+                            деньги_отправляемые, номер_счёта_получателя = cумма_ставки[0], int(
                                 event.object.fwd_messages[0]['from_id'])
 
                             def действие():
@@ -303,13 +301,14 @@ def main():
                                                  message=f"[id{номер_счёта_получателя}|{get_last_name(номер_счёта_получателя)} вас вызывает {last_name}]\n Сумма:{деньги_отправляемые}",
                                                  keyboard=menu_ruletka.get_keyboard(),
                                                  random_id=get_random_id())
+                            проверка_ставки(номер_счёта_получателя, cумма_ставки[0], действие)
                         except:
                             vk.messages.send(peer_id=event.object['peer_id'],
                                              message=f"{last_name} сумма ставки неверна",
                                              keyboard=menu.get_keyboard(),
                                              random_id=get_random_id())
 
-                            проверка_ставки(номер_счёта_получателя, сумма_ставки[0], действие)
+
                     elif основное_меню_текст == msg:
                         vk.messages.send(peer_id=event.object['peer_id'], message=основное_меню_текст,
                                          keyboard=menu.get_keyboard(),
