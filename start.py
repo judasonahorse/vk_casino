@@ -134,7 +134,7 @@ def main():
                     if event.obj.peer_id != event.obj.from_id:
 
                         chat_id_name = f"id{event.object['peer_id']}id"
-                        game_id_name = f"gameid{event.object['peer_id']}gameid"
+
                         db.create_table_for_chat(chat_id_name)
 
                         last_name = get_last_name(event.object.from_id)
@@ -261,7 +261,12 @@ def main():
                                                      message=f"{last_name}, Победил! {деньги_отправляемые}₽",
                                                      keyboard=casino.крестики_нолики(игра),
                                                      random_id=get_random_id())
-                                    db.get_balance(event.object.from_id) + (деньги_отправляемые * 2)
+                                    db.update_balance(event.object.from_user, получаем_баланс(event.object.from_id,
+                                                                                              chat_id_name) + (деньги_отправляемые * 2),
+                                                      chat_id_name)
+
+
+
                                     return True
 
 
@@ -271,8 +276,10 @@ def main():
                                                      message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])}, Победил! {деньги_отправляемые}₽",
                                                      keyboard=casino.крестики_нолики(игра),
                                                      random_id=get_random_id())
-                                    db.get_balance(список_крестики_нолики[event.object.from_id][1]) + (
-                                                деньги_отправляемые * 2)
+                                    db.update_balance(номер_врага,
+                                                      получаем_баланс(номер_врага, chat_id_name) + (деньги_отправляемые*2),
+                                                      chat_id_name)
+                                    return True
 
 
                                 elif ничья(игры_крестики_нолики[
@@ -332,14 +339,16 @@ def main():
                                                  random_id=get_random_id())
 
                         if config.крестики_нолики_принять_текст == msg:
-
                             try:
-                                vk.messages.send(peer_id=event.object['peer_id'],
+
+
+
+                                if список_крестики_нолики[event.object.from_id][4][0]:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
                                                  message=f"{last_name},доиграйте с {get_last_name(список_крестики_нолики[event.object.from_id][2])}",
                                                  keyboard=casino.крестики_нолики(casino.карта_крестики_нолики),
                                                  random_id=get_random_id())
-                            except:
-                                try:
+                                else:
                                     деньги_отправляемые, номер_врага = int(
                                         список_крестики_нолики[event.object.from_id][0]), int(
                                         список_крестики_нолики[event.object.from_id][2])
@@ -348,14 +357,17 @@ def main():
                                         event.object.from_id, chat_id_name), получаем_баланс(номер_врага, chat_id_name)
 
                                     def действие():
+                                        список_крестики_нолики[event.object.from_id][4][0] = True
+                                        список_крестики_нолики[номер_врага][4][0] = True
                                         игры_крестики_нолики[
                                             event.object.from_id + список_крестики_нолики[event.object.from_id][
                                                 1]] = {1: casino.крестик_1, 2: casino.крестик_2, 3: casino.крестик_3,
                                                        4: casino.крестик_4, 5: casino.крестик_5, 6: casino.крестик_6,
                                                        7: casino.крестик_7, 8: casino.крестик_8, 9: casino.крестик_9}, {
                                                           0: номер_врага}
-                                        db.get_balance(event.object.from_user, chat_id_name) - деньги_отправляемые
-                                        db.get_balance(номер_врага, chat_id_name) - деньги_отправляемые
+
+                                        db.update_balance(event.object.from_id,получаем_баланс(event.object.from_id, chat_id_name) - деньги_отправляемые,chat_id_name)
+                                        db.update_balance(номер_врага,получаем_баланс(номер_врага, chat_id_name) - деньги_отправляемые,chat_id_name)
 
 
                                     проверка_ставки(номер_врага, деньги_отправляемые, действие)
@@ -363,18 +375,21 @@ def main():
                                                      message=f"{get_last_name(номер_врага)}, Ходите! Номер игры:{event.object.from_id + номер_врага}",
                                                      keyboard=casino.крестики_нолики(casino.карта_крестики_нолики),
                                                      random_id=get_random_id())
+                            except:
+                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                 message=f"{last_name},читай инструкцию!",
+                                                 
+                                                 random_id=get_random_id())
 
-                                except:
-                                    vk.messages.send(peer_id=event.object['peer_id'],
-                                                     message=f"{last_name}, не так вызываете на игру",
 
-                                                     random_id=get_random_id())
+
 
 
                         elif config.крестики_нолики_текст in msg:
                             try:
-
-                                vk.messages.send(peer_id=event.object['peer_id'],
+                                print(список_крестики_нолики[event.object.from_id])
+                                if список_крестики_нолики[event.object.from_id][4] is True:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
                                                  message=f"{last_name},доиграйте с {get_last_name(список_крестики_нолики[event.object.from_id][2])}",
                                                  keyboard=casino.крестики_нолики(casino.карта_крестики_нолики),
                                                  random_id=get_random_id())
@@ -385,9 +400,9 @@ def main():
                                     деньги_отправляемые, номер_счёта_получателя = cумма_ставки, int(
                                         event.object.fwd_messages[0]['from_id'])
                                     список_крестики_нолики[int(номер_счёта_получателя)] = int(деньги_отправляемые), int(
-                                        event.object.from_id), int(event.object.from_id), False
+                                        event.object.from_id), int(event.object.from_id), False,{0:False}
                                     список_крестики_нолики[int(event.object.from_id)] = int(деньги_отправляемые), int(
-                                        номер_счёта_получателя), int(event.object.from_id), True
+                                        номер_счёта_получателя), int(event.object.from_id), True,{0:False}
 
                                     def действие():
                                         vk.messages.send(peer_id=event.object['peer_id'],
@@ -479,6 +494,268 @@ def main():
                                                      keyboard=buttons.menu_games.get_keyboard(),
                                                      random_id=get_random_id())
                             проверка_ставки(event.object.from_id, сумма, действие)
+                        elif config.дуэль_текст in msg:
+                            try:
+                                cумма_ставки = msg.replace(config.дуэль_текст, "").split()
+                                деньги_отправляемые, номер_счёта_получателя = cумма_ставки[0], int(
+                                    event.object.fwd_messages[0]['from_id'])
+
+                                def действие():
+                                    список_дуэль[int(номер_счёта_получателя)] = int(деньги_отправляемые), int(
+                                        event.object.from_id)
+
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"[id{номер_счёта_получателя}|{get_last_name(номер_счёта_получателя)} вас вызывает {last_name}]\n Сумма:{деньги_отправляемые}",
+                                                     keyboard=buttons.menu_ruletka.get_keyboard(),
+                                                     random_id=get_random_id())
+
+                                проверка_ставки(номер_счёта_получателя, cумма_ставки[0], действие)
+                            except:
+                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                 message=f"{last_name} сумма ставки неверна",
+                                                 keyboard=buttons.menu.get_keyboard(),
+                                                 random_id=get_random_id())
+                        elif config.основное_меню_текст == msg:
+                            vk.messages.send(peer_id=event.object['peer_id'], message=buttons.основное_меню_текст,
+                                             keyboard=buttons.menu.get_keyboard(),
+                                             random_id=get_random_id()
+                                             )
+                        elif config.игры_текст == msg:
+                            vk.messages.send(peer_id=event.object['peer_id'], message=buttons.игры_текст,
+                                             keyboard=buttons.menu_games.get_keyboard(),
+                                             random_id=get_random_id())
+
+
+                        elif config.баланс_текст == msg:
+
+                            if получаем_баланс(event.object.from_id, chat_id_name) is None:
+                                db.update_balance(event.object.from_id, config.размер_бонуса, chat_id_name)
+
+                            if int(получаем_баланс(event.object.from_id, chat_id_name)) == 0 and int(
+                                    получаем_банк(event.object.from_id, chat_id_name)) == 0:
+                                vk.messages.send(peer_id=event.object['peer_id'], message=f"{last_name}, нет денег(",
+                                                 keyboard=buttons.menu.get_keyboard(),
+                                                 random_id=get_random_id())
+                            else:
+                                рейтинг_гетаем = рейтинг()
+                                проценты = получаем_сколько_накапал_банк(event.object.from_id, chat_id_name)
+
+                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                 message=f"{last_name}\nБаланс: {получаем_баланс(event.object.from_id, chat_id_name)}₽\nВаш Банк:{получаем_банк(event.object.from_id, chat_id_name)}₽\nПроценты:{проценты}₽\nМиллионы: {рейтинг_гетаем}",
+                                                 keyboard=buttons.menu.get_keyboard(),
+                                                 random_id=get_random_id())
+                        elif config.казино_текст in msg:
+
+                            if config.казино_текст == msg:
+                                vk.messages.send(peer_id=event.object['peer_id'], message=buttons.казино_текст,
+                                                 keyboard=buttons.menu_kazino.get_keyboard(),
+                                                 random_id=get_random_id())
+
+                            if получаем_баланс(event.object.from_id, chat_id_name) is None:
+                                db.update_balance(event.object.from_id, config.размер_бонуса, chat_id_name)
+
+                            ставочные_деньги = msg = msg.replace('казино', '')
+
+                            def play(ставочные_деньги):
+                                if int(получаем_баланс(event.object.from_id,
+                                                       chat_id_name)) == 0 or ставочные_деньги == 0:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name}, нет денег или ставка равна 0",
+                                                     random_id=get_random_id())
+
+                                elif int(ставочные_деньги) < 25:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name}, мин ставка 25₽",
+                                                     random_id=get_random_id())
+
+
+                                elif int(получаем_баланс(event.object.from_id,
+                                                         chat_id_name)) > config.определённый_баланс and int(
+                                    ставочные_деньги) < config.мин_ставка_от_определённого_баланса and int(
+                                    ставочные_деньги) < int(получаем_баланс(event.object.from_id, chat_id_name)):
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name}, мин ставка: {config.мин_ставка_от_определённого_баланса}",
+                                                     random_id=get_random_id())
+
+
+                                elif int(ставочные_деньги) < int(
+                                        получаем_баланс(event.object.from_id, chat_id_name)) or int(
+                                    ставочные_деньги) == int(получаем_баланс(event.object.from_id, chat_id_name)):
+                                    итоги_ставки_отправлены = False
+
+                                    def шанс_и_значения(шанс, коэф, шанс_проигрышный, итоги_ставки_отправлены):
+
+                                        if random < шанс and итоги_ставки_отправлены is False:
+                                            def message(выйгрышь_или_проигрышь):
+                                                рейтинг_гетаем = рейтинг()
+                                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                                 message=f"{last_name} {выйгрышь_или_проигрышь} x{коэф}:\nБаланс:{str(получаем_баланс(event.object.from_id, chat_id_name))} ₽\nМиллионы:{рейтинг_гетаем}",
+                                                                 keyboard=buttons.menu_kazino.get_keyboard(),
+                                                                 random_id=get_random_id())
+
+                                            if шанс > шанс_проигрышный:
+                                                db.update_balance(event.object.from_id,
+                                                                  int(получаем_баланс(event.object.from_id,
+                                                                                      chat_id_name)) + (int(float(
+                                                                      int(ставочные_деньги) * коэф)) - int(
+                                                                      ставочные_деньги)), chat_id_name)
+
+                                                message("выйграл")
+                                                return True
+
+
+                                            elif random == 0:
+                                                db.update_balance(event.object.from_id,
+                                                                  int(получаем_баланс(event.object.from_id,
+                                                                                      chat_id_name)) - int(
+                                                                      ставочные_деньги), chat_id_name)
+                                                message("проиграл")
+                                                return True
+
+                                            else:
+                                                db.update_balance(event.object.from_id,
+                                                                  int(получаем_баланс(event.object.from_id,
+                                                                                      chat_id_name)) - ((
+                                                                          int(ставочные_деньги) - (
+                                                                      int(float(int(ставочные_деньги) * коэф))))),
+                                                                  chat_id_name)
+                                                message("проиграл")
+                                                return True
+                                            return False
+
+                                    if шанс_и_значения(5, 0, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+                                    elif шанс_и_значения(20, 0.5, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+                                    elif шанс_и_значения(66, 1.1, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+                                    elif шанс_и_значения(80, 1.5, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+                                    elif шанс_и_значения(97, 2, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+                                    elif шанс_и_значения(99, 5, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+                                    elif шанс_и_значения(100, 10, 65, итоги_ставки_отправлены):
+                                        итоги_ставки_отправлены = True
+
+                                else:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=last_name + ", у вас нет столько :) ",
+                                                     random_id=get_random_id())
+
+                            if isint(ставочные_деньги):
+                                play(ставочные_деньги)
+                            elif "процент" in msg:
+                                msg = msg.replace("процент", "").replace(" ", "")
+                                if isint(msg):
+                                    процент_от_ставки = int(float(
+                                        (float(получаем_баланс(event.object.from_id, chat_id_name)) / 100) * float(
+                                            msg)))
+                                    play(процент_от_ставки)
+                        elif config.перевести_текст in msg:
+                            if f'{buttons.перевести_текст} всё' in msg:
+
+                                try:
+                                    номер_счёта_получателя = int(
+                                        event.object.fwd_messages[0]['from_id'])
+                                    деньги_отправляемые = получаем_баланс(event.object.from_id, chat_id_name)
+
+                                    def действие():
+                                        баланс_отправителя, баланс_получателя = получаем_баланс(
+                                            event.object.from_id, chat_id_name), получаем_баланс(номер_счёта_получателя,
+                                                                                                 chat_id_name)
+                                        db.update_balance(event.object.from_id,
+                                                          int(баланс_отправителя) - int(деньги_отправляемые),
+                                                          chat_id_name)
+                                        баланс_отправителя, баланс_получателя = получаем_баланс(
+                                            event.object.from_id, chat_id_name), получаем_баланс(номер_счёта_получателя,
+                                                                                                 chat_id_name)
+                                        db.update_balance(номер_счёта_получателя,
+                                                          int(баланс_получателя) + int(деньги_отправляемые),
+                                                          chat_id_name)
+                                        vk.messages.send(peer_id=event.object['peer_id'],
+                                                         message=f"{last_name}, перевёл на {get_last_name(номер_счёта_получателя)} {str(деньги_отправляемые)} ₽",
+                                                         random_id=get_random_id())
+
+                                    проверка_ставки(номер_счёта_получателя, деньги_отправляемые, действие, False)
+                                except:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name} сумма или счёт указаны неверно ",
+                                                     random_id=get_random_id())
+                            else:
+                                сумма_перевода = str(msg).replace(buttons.перевести_текст, '').split()
+                                try:
+                                    деньги_отправляемые, номер_счёта_получателя = сумма_перевода[0], int(
+                                        event.object.fwd_messages[0]['from_id'])
+
+                                    def действие():
+                                        баланс_отправителя, баланс_получателя = получаем_баланс(
+                                            event.object.from_id, chat_id_name), получаем_баланс(номер_счёта_получателя,
+                                                                                                 chat_id_name)
+
+                                        db.update_balance(event.object.from_id,
+                                                          int(баланс_отправителя) - int(деньги_отправляемые),
+                                                          chat_id_name)
+                                        db.update_balance(номер_счёта_получателя,
+                                                          int(баланс_получателя) + int(деньги_отправляемые),
+                                                          chat_id_name)
+                                        vk.messages.send(peer_id=event.object['peer_id'],
+                                                         message=f"{last_name}, перевёл на {get_last_name(номер_счёта_получателя)} {деньги_отправляемые}₽",
+                                                         keyboard=buttons.основное(),
+                                                         random_id=get_random_id())
+
+                                    проверка_ставки(номер_счёта_получателя, деньги_отправляемые, действие)
+
+                                except:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name} сумма или счёт указаны неверно ",
+                                                     random_id=get_random_id())
+                        elif config.бонус_текст == msg:
+                            if получаем_баланс(event.object.from_id, chat_id_name) is None or int(
+                                    получаем_баланс(event.object.from_id, chat_id_name)) < 25 and получаем_банк(
+                                event.object.from_id, chat_id_name) == 0:
+                                время_на_которое_обновится_бонус = (
+                                        datetime.now() + timedelta(minutes=config.время_для_бонуса)).strftime(
+                                    time_format)
+                                if получаем_сколько_бонусов_юзера(event.object.from_id, chat_id_name) is None:
+                                    db.update_time_bonus(event.object.from_id, время_на_которое_обновится_бонус,
+                                                         chat_id_name)
+                                    db.update_bonus(event.object.from_id, 0, chat_id_name)
+                                    db.update_balance(event.object.from_id, config.первый_бонус, chat_id_name)
+
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name}\nПервый Бонус: {config.первый_бонус}",
+                                                     keyboard=buttons.menu.get_keyboard(),
+                                                     random_id=get_random_id())
+
+                                elif получаем_сколько_бонусов_юзера(event.object.from_id, chat_id_name) == 0:
+
+                                    if bonus(event.object.from_id, chat_id_name) is not True:
+                                        vk.messages.send(peer_id=event.object['peer_id'],
+                                                         message=f"{last_name} , бонус след: {бонус_по_мск(event.object.from_id, chat_id_name)}",
+                                                         keyboard=buttons.menu.get_keyboard(),
+                                                         random_id=get_random_id())
+
+                                elif получаем_сколько_бонусов_юзера(event.object.from_id, chat_id_name) == 1:
+                                    db.update_bonus(event.object.from_id, 0, chat_id_name)
+                                    db.update_balance(event.object.from_id, config.размер_бонуса, chat_id_name)
+                                    db.update_time_bonus(event.object.from_id, время_на_которое_обновится_бонус,
+                                                         chat_id_name)
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name}\nБонус: {config.размер_бонуса}",
+                                                     keyboard=buttons.menu.get_keyboard(),
+                                                     random_id=get_random_id())
+
+                            else:
+                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                 message=f"{last_name},вы не можете получить бонус",
+                                                 keyboard=buttons.menu.get_keyboard(),
+                                                 random_id=get_random_id())
+                        elif config.топ_текст == msg:
+                            vk.messages.send(peer_id=event.object['peer_id'],
+                                             message=f"👑 ТОП ОБЩИЙ 👑{получаем_топ_общий(chat_id_name)}",
+                                             keyboard=buttons.menu.get_keyboard(),
+                                             random_id=get_random_id())
                     else:
                         vk.messages.send(peer_id=event.object['peer_id'],
                                      message=f"Я не работаю в личных сообщениях, добавь меня в беседу!",
