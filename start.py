@@ -261,7 +261,7 @@ def main():
                                                      message=f"{last_name}, Победил! {деньги_отправляемые}₽",
                                                      keyboard=casino.крестики_нолики(игра),
                                                      random_id=get_random_id())
-                                    db.update_balance(event.object.from_user, получаем_баланс(event.object.from_id,
+                                    db.update_balance(event.object.from_id, получаем_баланс(event.object.from_id,
                                                                                               chat_id_name) + (деньги_отправляемые * 2),
                                                       chat_id_name)
 
@@ -378,7 +378,7 @@ def main():
                             except:
                                 vk.messages.send(peer_id=event.object['peer_id'],
                                                  message=f"{last_name},читай инструкцию!",
-                                                 
+
                                                  random_id=get_random_id())
 
 
