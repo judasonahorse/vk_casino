@@ -246,97 +246,124 @@ def main():
                                         7] != casino.крестик_7 and игра[8] != casino.крестик_8 and игра[
                                         9] != casino.крестик_9:
                                         return True
-                                    False
+                                    return False
+
+                                def кто_выйграл2(игра):
+
+                                    if кто_выйграл(крестик, игры_крестики_нолики[
+                                        event.object.from_id + список_крестики_нолики[event.object.from_id][1]][
+                                        0]) is True:
+                                        vk.messages.send(peer_id=event.object['peer_id'],
+                                                         message=f"{last_name}, Победил! {деньги_отправляемые}₽",
+                                                         keyboard=casino.крестики_нолики(игра),
+                                                         random_id=get_random_id())
+                                        db.update_balance(event.object.from_id, получаем_баланс(event.object.from_id,
+                                                                                                chat_id_name) + (
+                                                                      деньги_отправляемые * 2),
+                                                          chat_id_name)
+
+                                        return True
+
+
+                                    elif кто_выйграл(нолик, игры_крестики_нолики[
+                                        event.object.from_id + список_крестики_нолики[event.object.from_id][1]][
+                                        0]) is True:
+                                        vk.messages.send(peer_id=event.object['peer_id'],
+                                                         message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])}, Победил! {деньги_отправляемые}₽",
+                                                         keyboard=casino.крестики_нолики(игра),
+                                                         random_id=get_random_id())
+                                        db.update_balance(номер_врага,
+                                                          получаем_баланс(номер_врага, chat_id_name) + (
+                                                                      деньги_отправляемые * 2),
+                                                          chat_id_name)
+                                        return True
+
+
+                                    elif ничья(игры_крестики_нолики[
+                                                   event.object.from_id + список_крестики_нолики[event.object.from_id][
+                                                       1]][
+                                                   0]) is True:
+                                        vk.messages.send(peer_id=event.object['peer_id'],
+                                                         message=f"Ничья!",
+                                                         keyboard=casino.крестики_нолики(игра),
+                                                         random_id=get_random_id())
+                                        db.update_balance(event.object.from_id, получаем_баланс(event.object.from_id,
+                                                                                                chat_id_name) + 
+                                                                      деньги_отправляемые ,
+                                                          chat_id_name)
+                                        db.update_balance(номер_врага, получаем_баланс(номер_врага,
+                                                                                                chat_id_name) + 
+                                                                      деньги_отправляемые ,
+                                                          chat_id_name)
+                                        return True
+
+                                    return False
+
+                                def обнуление_игры():
+                                    игрок = список_крестики_нолики[event.object.from_id][1]
+
+                                    игры_крестики_нолики[
+                                        event.object.from_id + список_крестики_нолики[event.object.from_id][1]] = 0
+                                    список_крестики_нолики[игрок] = 0
+                                    список_крестики_нолики[event.object.from_id] = 0
+
+                                if event.object.from_id == игры_крестики_нолики[
+                                    event.object.from_id + список_крестики_нолики[event.object.from_id][1]][1][0]:
+                                    if список_крестики_нолики[event.object.from_id][3] is True:
+                                        if игра[номер_ячейки] == крестик or игра[номер_ячейки] == нолик:
+                                            vk.messages.send(peer_id=event.object['peer_id'],
+                                                             message=f"{last_name},Обноружен багоюзер! {деньги_отправляемые}₽",
+                                                             keyboard=casino.крестики_нолики(игра),
+                                                             random_id=get_random_id())
+                                        else:
+
+                                            игра[номер_ячейки] = крестик
+
+                                            if not кто_выйграл2(игра):
+                                                игры_крестики_нолики[
+                                                    event.object.from_id + список_крестики_нолики[event.object.from_id][
+                                                        1]][
+                                                    1][0] = список_крестики_нолики[event.object.from_id][1]
+                                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                                 message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])},Ходите! {деньги_отправляемые}₽",
+                                                                 keyboard=casino.крестики_нолики(игра),
+                                                                 random_id=get_random_id())
+
+                                            else:
+                                                обнуление_игры()
+
+                                    elif список_крестики_нолики[event.object.from_id][3] is False:
+                                        if игра[номер_ячейки] == крестик or игра[номер_ячейки] == нолик:
+                                            vk.messages.send(peer_id=event.object['peer_id'],
+                                                             message=f"{last_name},Обноружен багоюзер! {деньги_отправляемые}₽",
+                                                             keyboard=casino.крестики_нолики(игра),
+                                                             random_id=get_random_id())
+                                        else:
+                                            игра[номер_ячейки] = нолик
+                                            if not кто_выйграл2(игра):
+                                                игры_крестики_нолики[
+                                                    event.object.from_id + список_крестики_нолики[event.object.from_id][
+                                                        1]][
+                                                    1][0] = список_крестики_нолики[event.object.from_id][1]
+                                                vk.messages.send(peer_id=event.object['peer_id'],
+                                                                 message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])},Ходите!",
+                                                                 keyboard=casino.крестики_нолики(игра),
+                                                                 random_id=get_random_id())
+                                            else:
+                                                обнуление_игры()
+
+                                else:
+                                    vk.messages.send(peer_id=event.object['peer_id'],
+                                                     message=f"{last_name},не ваш ход!",
+                                                     keyboard=casino.крестики_нолики(игра),
+                                                     random_id=get_random_id())
                             except:
                                 vk.messages.send(peer_id=event.object['peer_id'],
                                                  message=f"{last_name}, нет такой игры",
 
                                                  random_id=get_random_id())
 
-                            def кто_выйграл2(игра):
 
-                                if кто_выйграл(крестик, игры_крестики_нолики[
-                                    event.object.from_id + список_крестики_нолики[event.object.from_id][1]][0]) is True:
-                                    vk.messages.send(peer_id=event.object['peer_id'],
-                                                     message=f"{last_name}, Победил! {деньги_отправляемые}₽",
-                                                     keyboard=casino.крестики_нолики(игра),
-                                                     random_id=get_random_id())
-                                    db.update_balance(event.object.from_id, получаем_баланс(event.object.from_id,
-                                                                                              chat_id_name) + (деньги_отправляемые * 2),
-                                                      chat_id_name)
-
-
-
-                                    return True
-
-
-                                elif кто_выйграл(нолик, игры_крестики_нолики[
-                                    event.object.from_id + список_крестики_нолики[event.object.from_id][1]][0]) is True:
-                                    vk.messages.send(peer_id=event.object['peer_id'],
-                                                     message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])}, Победил! {деньги_отправляемые}₽",
-                                                     keyboard=casino.крестики_нолики(игра),
-                                                     random_id=get_random_id())
-                                    db.update_balance(номер_врага,
-                                                      получаем_баланс(номер_врага, chat_id_name) + (деньги_отправляемые*2),
-                                                      chat_id_name)
-                                    return True
-
-
-                                elif ничья(игры_крестики_нолики[
-                                               event.object.from_id + список_крестики_нолики[event.object.from_id][1]][
-                                               0]) is True:
-                                    vk.messages.send(peer_id=event.object['peer_id'],
-                                                     message=f"Ничья!",
-                                                     keyboard=casino.крестики_нолики(игра),
-                                                     random_id=get_random_id())
-                                    return True
-
-                                return False
-
-                            def обнуление_игры():
-                                игрок = список_крестики_нолики[event.object.from_id][1]
-
-                                игры_крестики_нолики[
-                                    event.object.from_id + список_крестики_нолики[event.object.from_id][1]] = 0
-                                список_крестики_нолики[игрок] = 0
-                                список_крестики_нолики[event.object.from_id] = 0
-
-                            if event.object.from_id == игры_крестики_нолики[
-                                event.object.from_id + список_крестики_нолики[event.object.from_id][1]][1][0]:
-                                if список_крестики_нолики[event.object.from_id][3] is True:
-
-                                    игра[номер_ячейки] = крестик
-
-                                    if not кто_выйграл2(игра):
-                                        игры_крестики_нолики[
-                                            event.object.from_id + список_крестики_нолики[event.object.from_id][1]][
-                                            1][0] = список_крестики_нолики[event.object.from_id][1]
-                                        vk.messages.send(peer_id=event.object['peer_id'],
-                                                         message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])},Ходите! {деньги_отправляемые}₽",
-                                                         keyboard=casino.крестики_нолики(игра),
-                                                         random_id=get_random_id())
-
-                                    else:
-                                        обнуление_игры()
-                                elif список_крестики_нолики[event.object.from_id][3] is False:
-
-                                    игра[номер_ячейки] = нолик
-                                    if not кто_выйграл2(игра):
-                                        игры_крестики_нолики[
-                                            event.object.from_id + список_крестики_нолики[event.object.from_id][1]][
-                                            1][0] = список_крестики_нолики[event.object.from_id][1]
-                                        vk.messages.send(peer_id=event.object['peer_id'],
-                                                         message=f"{get_last_name(список_крестики_нолики[event.object.from_id][1])},Ходите!",
-                                                         keyboard=casino.крестики_нолики(игра),
-                                                         random_id=get_random_id())
-                                    else:
-                                        обнуление_игры()
-
-                            else:
-                                vk.messages.send(peer_id=event.object['peer_id'],
-                                                 message=f"{last_name},не ваш ход!",
-                                                 keyboard=casino.крестики_нолики(игра),
-                                                 random_id=get_random_id())
 
                         if config.крестики_нолики_принять_текст == msg:
                             try:
@@ -431,7 +458,7 @@ def main():
                                                             (datetime.now()).strftime(time_format),
                                                             chat_id_name)
                                 vk.messages.send(peer_id=event.object['peer_id'],
-                                                 message=f"{last_name}\nПополнил банк:{сумма_с_комиссией}₽\nКомиссия:{buttons.комиссия_банка}%",
+                                                 message=f"{last_name}\nПополнил банк:{сумма_с_комиссией}₽\nКомиссия:{config.комиссия_банка}%",
                                                  keyboard=buttons.menu.get_keyboard(),
                                                  random_id=get_random_id())
 
@@ -701,7 +728,7 @@ def main():
                                                           chat_id_name)
                                         vk.messages.send(peer_id=event.object['peer_id'],
                                                          message=f"{last_name}, перевёл на {get_last_name(номер_счёта_получателя)} {деньги_отправляемые}₽",
-                                                         keyboard=buttons.основное(),
+                                                         keyboard=buttons.menu.get_keyboard(),
                                                          random_id=get_random_id())
 
                                     проверка_ставки(номер_счёта_получателя, деньги_отправляемые, действие)
